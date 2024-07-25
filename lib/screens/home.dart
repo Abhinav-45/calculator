@@ -1,32 +1,12 @@
-import 'package:calculator/buttons.dart';
+
+
 import 'package:calculator/screens/history.dart';
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:io' as io;
-import 'package:device_info_plus/device_info_plus.dart';
 
-Future<String> getDeviceId() async {
-  DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  String deviceId;
-
-  try {
-    if (io.Platform.isIOS) {
-      IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
-      deviceId = iosInfo.identifierForVendor ?? 'unknown';
-    } else if (io.Platform.isAndroid) {
-      AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
-      deviceId = androidInfo.id;
-    } else {
-      deviceId = 'unknown'; // Handle other platforms if needed
-    }
-  } catch (e) {
-    deviceId = 'unknown';
-    print('Error retrieving device ID: $e');
-  }
-
-  return deviceId;
-}
+import '../utils/device_info.dart';
+import '../widgets/buttons.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,7 +18,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var question = '';
   var answer = '';
-  
+  String devId = '';
 
   static const backgroundColor = Color(0xff1a1111);
   static const buttonColor1 = Color(0xff594319);
@@ -47,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
   static const buttonColor4 = Color(0xff251919);
   static const textColor1 = Color(0xfff1dedd);
   static const textColor2 = Colors.white;
-  static const double buttonSize = 73;
+  static const double buttonSize = 70;
 
   @override
   Widget build(BuildContext context) {
@@ -127,30 +107,33 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildHorizontalScrollableRow(List<String> functions) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      child: Row(
-        children: functions.map((String value) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            child: SizedBox(
-              width: buttonSize,
-              height: buttonSize,
-              child: CirclButton(
-                value: value,
-                color: buttonColor2,
-                press: () => _onButtonPress(value),
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          children: functions.map((String value) {
+            return Padding(
+              padding: const EdgeInsets.only(left: 5, right: 10),
+              child: SizedBox(
+                width: buttonSize,
+                height: buttonSize,
+                child: CirclButton(
+                  value: value,
+                  color: buttonColor2,
+                  press: () => _onButtonPress(value),
+                ),
               ),
-            ),
-          );
-        }).toList(),
+            );
+          }).toList(),
+        ),
       ),
     );
   }
 
   Widget _buildButtons() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 30),
+      padding: const EdgeInsets.symmetric(vertical: 15),
       child: Column(
         children: [
           _buildButtonRow(['AC', '(  )', '%', '÷'],
@@ -173,14 +156,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildButtonRow(List<String> values, List<Color?> colors) {
-    return Row(
-      children: List.generate(values.length, (index) {
-        return CirclButton(
-          value: values[index],
-          color: colors[index],
-          press: () => _onButtonPress(values[index]),
-        );
-      }),
+    return Padding(
+      padding: const EdgeInsets.only(left: 5, right: 5),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: List.generate(values.length, (index) {
+          return CirclButton(
+            value: values[index],
+            color: colors[index],
+            press: () => _onButtonPress(values[index]),
+          );
+        }),
+      ),
     );
   }
 

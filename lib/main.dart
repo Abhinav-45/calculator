@@ -9,10 +9,12 @@ class CalcApp extends StatelessWidget {
     routes: [
       GoRoute(
         path: '/home',
-        builder: (context, state) => HomeScreen(),
+        builder: (context, state) => const HomeScreen(),
       ),
     ],
   );
+
+  CalcApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -22,25 +24,15 @@ class CalcApp extends StatelessWidget {
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // if(kIsWeb){
-  //   await Firebase.initializeApp(options: FirebaseOptions(apiKey: "AIzaSyCfI0L2Ux2OJUn8rg_Gkr28dfRiwe2ic1c",
-  // authDomain: "calculator-fde0f.firebaseapp.com",
-  // projectId: "calculator-fde0f",
-  // storageBucket: "calculator-fde0f.appspot.com",
-  // messagingSenderId: "141934244235",
-  // appId: "1:141934244235:web:51ba653452c938174bbf8e"));
 
-  // }
-  // else{
   await Firebase.initializeApp(
-      options: FirebaseOptions(
+      options: const FirebaseOptions(
           apiKey: "AIzaSyCfI0L2Ux2OJUn8rg_Gkr28dfRiwe2ic1c",
           authDomain: "calculator-fde0f.firebaseapp.com",
           projectId: "calculator-fde0f",
           storageBucket: "calculator-fde0f.appspot.com",
           messagingSenderId: "141934244235",
           appId: "1:141934244235:web:51ba653452c938174bbf8e"));
-  // }
 
   runApp(CalcApp());
 }
