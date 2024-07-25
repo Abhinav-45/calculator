@@ -1,5 +1,3 @@
-
-
 import 'package:calculator/screens/history.dart';
 import 'package:flutter/material.dart';
 import 'package:math_expressions/math_expressions.dart';
@@ -7,6 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../utils/device_info.dart';
 import '../widgets/buttons.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -18,7 +18,8 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var question = '';
   var answer = '';
-  String devId = '';
+
+  String devID = '';
 
   static const backgroundColor = Color(0xff1a1111);
   static const buttonColor1 = Color(0xff594319);
@@ -30,6 +31,28 @@ class _HomeScreenState extends State<HomeScreen> {
   static const double buttonSize = 70;
 
   @override
+  void initState() {
+    super.initState();
+    _loadDeviceId();
+  }
+
+  Future<void> _loadDeviceId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? storedDevID = prefs.getString('device_id');
+    if (storedDevID == null) {
+      String newDevID = await getDeviceId();
+      await prefs.setString('device_id', newDevID);
+      setState(() {
+        devID = newDevID;
+      });
+    } else {
+      setState(() {
+        devID = storedDevID;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: backgroundColor,
@@ -37,11 +60,12 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: backgroundColor,
         actions: [
           IconButton(
-            onPressed: () async {
-              String deviceId = await getDeviceId();
+            onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => HistScreen(deviceId: deviceId),
+                  builder: (context) => HistScreen(
+                    deviceId: devID,
+                  ),
                 ),
               );
             },
@@ -286,6 +310,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       // Get a unique device ID
       String deviceId = await getDeviceId();
+      devID = deviceId;
 
       // Save to a device-specific Firestore collection
       await FirebaseFirestore.instance
