@@ -1,5 +1,6 @@
 import 'package:calculator/screens/history.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -19,10 +20,12 @@ class _HomeScreenState extends State<HomeScreen> {
   var question = '';
   var answer = '';
   bool isDegree = false;
+  bool showScientificButtons = false;
+  bool isInverse = false; // Track if inverse functions are active
 
   String devID = '';
 
-  static const backgroundColor = Color(0xff1a1111);
+  static const backgroundColor = Color(0xff141414);
   static const buttonColor1 = Color(0xff594319);
   static const buttonColor2 = Color(0xff5d3f3d);
   static const buttonColor3 = Color(0xff733331);
@@ -58,6 +61,18 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       backgroundColor: backgroundColor,
       appBar: AppBar(
+        leading: TextButton(
+          child: Text(
+            'INV',
+            style: TextStyle(color: Colors.white, fontSize: Checkbox.width),
+          ),
+          onPressed: () {
+            setState(() {
+              isInverse =
+                  !isInverse; // Toggle between normal and inverse scientific functions
+            });
+          },
+        ),
         backgroundColor: backgroundColor,
         actions: [
           IconButton(
@@ -83,18 +98,36 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             child: Text(
               isDegree ? 'RAD' : 'DEG',
-              style: TextStyle(
-                  color: textColor1, fontSize: 20), // Change icon based on mode
+              style: TextStyle(color: textColor1, fontSize: 20),
             ),
-          )
+          ),
         ],
       ),
       body: SafeArea(
         child: Column(
           children: [
             _buildDisplay(),
-            _buildScientificButtonsRow1(),
-            _buildScientificButtonsRow2(),
+            // _dividerLine(),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10),
+              child: IconButton(
+                onPressed: () {
+                  setState(() {
+                    showScientificButtons =
+                        !showScientificButtons; // Toggle visibility
+                  });
+                },
+                icon: Icon(
+                  showScientificButtons
+                      ? Icons.arrow_drop_down_sharp
+                      : Icons.arrow_drop_up_sharp,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            if (showScientificButtons) ...[
+              _buildScientificSection(), // Show scientific buttons if toggled
+            ],
             _buildButtons(),
           ],
         ),
@@ -102,10 +135,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget _dividerLine() {
+    return Divider(
+      color: Colors.white,
+    );
+  }
+
   Widget _buildDisplay() {
     return Expanded(
       child: SingleChildScrollView(
         child: Container(
+          // color: backgroundColor,
           padding: const EdgeInsets.all(15),
           alignment: Alignment.centerRight,
           child: Column(
@@ -124,6 +164,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Text(
                   answer,
                   style: const TextStyle(fontSize: 30, color: textColor2),
+                  textAlign: TextAlign.right,
                 ),
               ),
             ],
@@ -133,17 +174,24 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildScientificButtonsRow1() {
-    List<String> functions = ['sin', 'cos', 'tan', 'ln', '√', 'x²'];
-    return _buildHorizontalScrollableRow(functions);
+  Widget _buildScientificSection() {
+    List<String> functions;
+    if (isInverse) {
+      functions = ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', 'x²'];
+    } else {
+      functions = ['sin', 'cos', 'tan', '√'];
+    }
+
+    return Column(
+      children: [
+        // Scientific Buttons Rows
+        _buildScientificButtonsRow(functions),
+        _buildScientificButtonsRow(['π', 'e', 'ln', '^']),
+      ],
+    );
   }
 
-  Widget _buildScientificButtonsRow2() {
-    List<String> functions = ['sin⁻¹', 'cos⁻¹', 'tan⁻¹', '^', 'π', 'e'];
-    return _buildHorizontalScrollableRow(functions);
-  }
-
-  Widget _buildHorizontalScrollableRow(List<String> functions) {
+  Widget _buildScientificButtonsRow(List<String> functions) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
@@ -155,9 +203,9 @@ class _HomeScreenState extends State<HomeScreen> {
               child: SizedBox(
                 width: buttonSize,
                 height: buttonSize,
-                child: CirclButton(
+                child: SquareButton(
                   value: value,
-                  color: buttonColor2,
+                  color: backgroundColor,
                   press: () => _onButtonPress(value),
                 ),
               ),
@@ -198,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: List.generate(values.length, (index) {
-          return CirclButton(
+          return SquareButton(
             value: values[index],
             color: colors[index],
             press: () => _onButtonPress(values[index]),
@@ -242,6 +290,9 @@ class _HomeScreenState extends State<HomeScreen> {
           case '=':
             _evaluateExpression();
             break;
+          case 'INV':
+            // INV button is handled in AppBar
+            break;
           case 'sin':
           case 'cos':
           case 'tan':
@@ -277,31 +328,45 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _handleScientificOperation(String value) {
-    switch (value) {
-      case 'sin':
-      case 'cos':
-      case 'tan':
-      case 'sin⁻¹':
-      case 'cos⁻¹':
-      case 'tan⁻¹':
-      case '^':
-      case 'ln':
-        question += '$value(';
-        break;
-      case '√':
-        question += 'sqrt(';
-        break;
-      case 'x²':
-        question += '^2';
-        break;
-      case 'π':
-        question += 'π';
-        // question += '3.141592653589793';
-        break;
-      case 'e':
-        question += 'e';
-        // question += '2.718281828459045';
-        break;
+    if (isInverse) {
+      switch (value) {
+        case 'sin⁻¹':
+        case 'cos⁻¹':
+        case 'tan⁻¹':
+        case 'x²':
+          question += '$value(';
+          break;
+        case '^':
+          question += '^2';
+          break;
+        case 'π':
+          question += 'π';
+          break;
+        case 'e':
+          question += 'e';
+          break;
+      }
+    } else {
+      switch (value) {
+        case 'sin':
+        case 'cos':
+        case 'tan':
+        case 'ln':
+          question += '$value(';
+          break;
+        case '√':
+          question += 'sqrt(';
+          break;
+        case 'x²':
+          question += '^2';
+          break;
+        case 'π':
+          question += 'π';
+          break;
+        case 'e':
+          question += 'e';
+          break;
+      }
     }
   }
 
