@@ -18,6 +18,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   var question = '';
   var answer = '';
+  bool isDegree = false;
 
   String devID = '';
 
@@ -72,6 +73,18 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: const Icon(
               Icons.history,
               color: textColor2,
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              setState(() {
+                isDegree = !isDegree; // Toggle between degrees and radians
+              });
+            },
+            child: Text(
+              isDegree ? 'RAD' : 'DEG',
+              style: TextStyle(
+                  color: textColor1, fontSize: 20), // Change icon based on mode
             ),
           )
         ],
@@ -282,10 +295,12 @@ class _HomeScreenState extends State<HomeScreen> {
         question += '^2';
         break;
       case 'π':
-        question += '3.141592653589793';
+        question += 'π';
+        // question += '3.141592653589793';
         break;
       case 'e':
-        question += '2.718281828459045';
+        question += 'e';
+        // question += '2.718281828459045';
         break;
     }
   }
@@ -297,7 +312,20 @@ class _HomeScreenState extends State<HomeScreen> {
           .replaceAll('÷', '/')
           .replaceAll('sin⁻¹', 'arcsin')
           .replaceAll('cos⁻¹', 'arccos')
-          .replaceAll('tan⁻¹', 'arctan');
+          .replaceAll('tan⁻¹', 'arctan')
+          .replaceAll('π', '3.141592653589793')
+          .replaceAll('e', '2.718281828459045');
+      if (isDegree) {
+        // Convert degrees to radians for trigonometric functions
+        modifiedQues = modifiedQues.replaceAllMapped(
+          RegExp(r'(sin|cos|tan|arcsin|arccos|arctan)\(([^)]+)\)'),
+          (match) {
+            String func = match.group(1)!;
+            String arg = match.group(2)!;
+            return '$func(radians($arg))';
+          },
+        );
+      }
       Parser p = Parser();
       Expression exp = p.parse(modifiedQues);
       ContextModel cm = ContextModel();
