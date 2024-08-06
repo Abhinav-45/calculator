@@ -97,7 +97,7 @@ class _HomeScreenState extends State<HomeScreen> {
               });
             },
             child: Text(
-              isDegree ? 'RAD' : 'DEG',
+              isDegree ? 'DEG' : 'RAD',
               style: TextStyle(color: textColor1, fontSize: 20),
             ),
           ),
@@ -372,6 +372,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _evaluateExpression() async {
     try {
+      // Initial expression modifications
       String modifiedQues = question
           .replaceAll('×', '*')
           .replaceAll('÷', '/')
@@ -380,6 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
           .replaceAll('tan⁻¹', 'arctan')
           .replaceAll('π', '3.141592653589793')
           .replaceAll('e', '2.718281828459045');
+
       if (isDegree) {
         // Convert degrees to radians for trigonometric functions
         modifiedQues = modifiedQues.replaceAllMapped(
@@ -387,14 +389,20 @@ class _HomeScreenState extends State<HomeScreen> {
           (match) {
             String func = match.group(1)!;
             String arg = match.group(2)!;
-            return '$func(radians($arg))';
+            // Ensure that we handle cases where the argument may already be a valid number or expression
+            return '$func($arg * 3.141592653589793 / 180)';
           },
         );
       }
+
+      print('Modified Question: $modifiedQues'); // Debug print
+
+      // Parse and evaluate the expression
       Parser p = Parser();
       Expression exp = p.parse(modifiedQues);
       ContextModel cm = ContextModel();
       double eval = exp.evaluate(EvaluationType.REAL, cm);
+
       if (eval.isNaN) {
         answer = 'Error: Not a Number';
       } else {
@@ -416,6 +424,7 @@ class _HomeScreenState extends State<HomeScreen> {
         'timestamp': FieldValue.serverTimestamp(),
       });
     } catch (e) {
+      print('Error: $e'); // Debug print
       answer = 'Error';
     }
 
