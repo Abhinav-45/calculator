@@ -20,8 +20,7 @@ class SquareButton extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        borderRadius:
-            BorderRadius.circular(20), // Match border radius of button
+        borderRadius: BorderRadius.circular(20),
         splashColor: splashColor,
         onTap: press,
         child: Container(
@@ -29,22 +28,20 @@ class SquareButton extends StatelessWidget {
           width: 80,
           decoration: BoxDecoration(
             color: color,
-            borderRadius: BorderRadius.circular(20), // Rounded corners
+            borderRadius: BorderRadius.circular(20),
             boxShadow: [
               BoxShadow(
-                color: Color.fromARGB(255, 173, 144, 144)
-                    .withOpacity(0.2), // Shadow color
+                color: const Color.fromARGB(255, 173, 144, 144).withOpacity(0.2),
                 spreadRadius: 2,
                 blurRadius: 4,
-                offset: Offset(2, 2), // Shadow offset
+                offset: const Offset(2, 2),
               ),
             ],
           ),
           child: Center(
             child: Text(
               value,
-              style: TextStyle(
-                  fontSize: 20, color: textColor), // Adjusted text size
+              style: const TextStyle(fontSize: 20, color: textColor),
             ),
           ),
         ),

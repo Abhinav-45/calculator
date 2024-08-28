@@ -27,11 +27,29 @@ class HistScreen extends StatelessWidget {
     }
   }
 
+  Future<void> _clearHistory() async {
+    try {
+      var querySnapshot = await FirebaseFirestore.instance
+          .collection('devices')
+          .doc(deviceId)
+          .collection('history')
+          .get();
+
+      for (var doc in querySnapshot.docs) {
+        await _deleteHistoryItem(doc.id);
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error clearing history: $e');
+      }
+    }
+  }
+
   Widget _buildListItem(DocumentSnapshot doc) {
     var data = doc.data() as Map<String, dynamic>;
     var timestamp = data['timestamp'] != null
-                  ? (data['timestamp'] as Timestamp).toDate()
-                  : DateTime.now();
+        ? (data['timestamp'] as Timestamp).toDate()
+        : DateTime.now();
     var formattedDate = DateFormat('yMMMd').add_jm().format(timestamp);
 
     return ListTile(
@@ -88,6 +106,17 @@ class HistScreen extends StatelessWidget {
             Navigator.of(context).pop();
           },
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.clear_all, color: textColor1),
+            onPressed: () async {
+              bool confirm = await _showClearConfirmationDialog(context);
+              if (confirm) {
+                await _clearHistory();
+              }
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -99,5 +128,32 @@ class HistScreen extends StatelessWidget {
         builder: _buildHistoryList,
       ),
     );
+  }
+
+  Future<bool> _showClearConfirmationDialog(BuildContext context) async {
+    return showDialog<bool>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: backgroundColor,
+          title: const Text(
+            'Clear History',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: const Text('Are you sure you want to clear all history?',
+              style: TextStyle(color: Colors.white)),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Clear'),
+            ),
+          ],
+        );
+      },
+    ).then((value) => value ?? false);
   }
 }

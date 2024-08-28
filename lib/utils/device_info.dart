@@ -22,7 +22,7 @@ Future<String> getDeviceId() async {
       model = androidInfo.model;
       deviceId = id + brand + product + model;
     } else {
-      deviceId = 'unknown'; // Handle other platforms if needed
+      deviceId = 'unknown'; 
     }
   } catch (e) {
     deviceId = 'unknown';

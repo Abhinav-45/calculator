@@ -22,6 +22,7 @@ class CalcApp extends StatelessWidget {
   }
 }
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 

@@ -1,6 +1,5 @@
 import 'package:calculator/screens/history.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:math_expressions/math_expressions.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -21,7 +20,7 @@ class _HomeScreenState extends State<HomeScreen> {
   var answer = '';
   bool isDegree = false;
   bool showScientificButtons = false;
-  bool isInverse = false; // Track if inverse functions are active
+  bool isInverse = false; 
 
   String devID = '';
 
@@ -62,14 +61,14 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: backgroundColor,
       appBar: AppBar(
         leading: TextButton(
-          child: Text(
+          child: const Text(
             'INV',
             style: TextStyle(color: Colors.white, fontSize: Checkbox.width),
           ),
           onPressed: () {
             setState(() {
               isInverse =
-                  !isInverse; // Toggle between normal and inverse scientific functions
+                  !isInverse; 
             });
           },
         ),
@@ -93,12 +92,12 @@ class _HomeScreenState extends State<HomeScreen> {
           TextButton(
             onPressed: () {
               setState(() {
-                isDegree = !isDegree; // Toggle between degrees and radians
+                isDegree = !isDegree;
               });
             },
             child: Text(
               isDegree ? 'DEG' : 'RAD',
-              style: TextStyle(color: textColor1, fontSize: 20),
+              style: const TextStyle(color: textColor1, fontSize: 20),
             ),
           ),
         ],
@@ -107,14 +106,14 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Column(
           children: [
             _buildDisplay(),
-            // _dividerLine(),
+            
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 10),
               child: IconButton(
                 onPressed: () {
                   setState(() {
                     showScientificButtons =
-                        !showScientificButtons; // Toggle visibility
+                        !showScientificButtons; 
                   });
                 },
                 icon: Icon(
@@ -126,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             if (showScientificButtons) ...[
-              _buildScientificSection(), // Show scientific buttons if toggled
+              _buildScientificSection(), 
             ],
             _buildButtons(),
           ],
@@ -135,17 +134,13 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _dividerLine() {
-    return Divider(
-      color: Colors.white,
-    );
-  }
+  
 
   Widget _buildDisplay() {
     return Expanded(
       child: SingleChildScrollView(
         child: Container(
-          // color: backgroundColor,
+          
           padding: const EdgeInsets.all(15),
           alignment: Alignment.centerRight,
           child: Column(
@@ -184,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Column(
       children: [
-        // Scientific Buttons Rows
+        
         _buildScientificButtonsRow(functions),
         _buildScientificButtonsRow(['π', 'e', 'ln', '^']),
       ],
@@ -291,7 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _evaluateExpression();
             break;
           case 'INV':
-            // INV button is handled in AppBar
+            
             break;
           case 'sin':
           case 'cos':
@@ -333,11 +328,14 @@ class _HomeScreenState extends State<HomeScreen> {
         case 'sin⁻¹':
         case 'cos⁻¹':
         case 'tan⁻¹':
-        case 'x²':
+        case 'ln':
           question += '$value(';
           break;
-        case '^':
+        case 'x²':
           question += '^2';
+          break;
+        case '^':
+          question += '^';
           break;
         case 'π':
           question += 'π';
@@ -357,9 +355,10 @@ class _HomeScreenState extends State<HomeScreen> {
         case '√':
           question += 'sqrt(';
           break;
-        case 'x²':
-          question += '^2';
+        case '^':
+          question += '^';
           break;
+
         case 'π':
           question += 'π';
           break;
@@ -372,59 +371,67 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _evaluateExpression() async {
     try {
-      // Initial expression modifications
-      String modifiedQues = question
-          .replaceAll('×', '*')
-          .replaceAll('÷', '/')
-          .replaceAll('sin⁻¹', 'arcsin')
-          .replaceAll('cos⁻¹', 'arccos')
-          .replaceAll('tan⁻¹', 'arctan')
-          .replaceAll('π', '3.141592653589793')
-          .replaceAll('e', '2.718281828459045');
+     
+      final number = RegExp(r'^-?(\d+(\.\d*)?|\.\d+)$');
 
-      if (isDegree) {
-        // Convert degrees to radians for trigonometric functions
-        modifiedQues = modifiedQues.replaceAllMapped(
-          RegExp(r'(sin|cos|tan|arcsin|arccos|arctan)\(([^)]+)\)'),
-          (match) {
-            String func = match.group(1)!;
-            String arg = match.group(2)!;
-            // Ensure that we handle cases where the argument may already be a valid number or expression
-            return '$func($arg * 3.141592653589793 / 180)';
-          },
-        );
-      }
-
-      print('Modified Question: $modifiedQues'); // Debug print
-
-      // Parse and evaluate the expression
-      Parser p = Parser();
-      Expression exp = p.parse(modifiedQues);
-      ContextModel cm = ContextModel();
-      double eval = exp.evaluate(EvaluationType.REAL, cm);
-
-      if (eval.isNaN) {
-        answer = 'Error: Not a Number';
+      if (number.hasMatch(question)) {
+        
+        answer = 'Do some calculation!!';
       } else {
-        answer = eval.toString();
+        
+        String modifiedQues = question
+            .replaceAll('×', '*')
+            .replaceAll('÷', '/')
+            .replaceAll('sin⁻¹', 'arcsin')
+            .replaceAll('cos⁻¹', 'arccos')
+            .replaceAll('tan⁻¹', 'arctan')
+            .replaceAll('π', '3.141592653589793')
+            .replaceAll('e', '2.718281828459045');
+
+        if (isDegree) {
+          
+          modifiedQues = modifiedQues.replaceAllMapped(
+            RegExp(r'(sin|cos|tan|arcsin|arccos|arctan)\(([^)]+)\)'),
+            (match) {
+              String func = match.group(1)!;
+              String arg = match.group(2)!;
+             
+              return '$func($arg * 3.141592653589793 / 180)';
+            },
+          );
+        }
+
+        
+
+        
+        Parser p = Parser();
+        Expression exp = p.parse(modifiedQues);
+        ContextModel cm = ContextModel();
+        double eval = exp.evaluate(EvaluationType.REAL, cm);
+
+        if (eval.isNaN) {
+          answer = 'Error: Not a Number';
+        } else {
+          answer = eval.toStringAsFixed(4);
+        }
+
+        
+        String deviceId = await getDeviceId();
+        devID = deviceId;
+
+        
+        await FirebaseFirestore.instance
+            .collection('devices')
+            .doc(deviceId)
+            .collection('history')
+            .add({
+          'question': question,
+          'answer': answer,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
       }
-
-      // Get a unique device ID
-      String deviceId = await getDeviceId();
-      devID = deviceId;
-
-      // Save to a device-specific Firestore collection
-      await FirebaseFirestore.instance
-          .collection('devices')
-          .doc(deviceId)
-          .collection('history')
-          .add({
-        'question': question,
-        'answer': answer,
-        'timestamp': FieldValue.serverTimestamp(),
-      });
     } catch (e) {
-      print('Error: $e'); // Debug print
+      
       answer = 'Error';
     }
 
